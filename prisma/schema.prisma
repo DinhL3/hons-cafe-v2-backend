@@ -11,3 +11,28 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Category {
+  id        String     @id
+  name      String
+  sortOrder Int
+  items     MenuItem[]
+}
+
+model MenuItem {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  available   Boolean  @default(true)
+  imageUrl    String
+  tags        String[]
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+}
+
+model Staff {
+  id           String @id @default(uuid())
+  username     String @unique
+  passwordHash String
+}
