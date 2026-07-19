@@ -7,12 +7,12 @@
 ## Stack
 
 - [NestJS](https://nestjs.com) 11 (Express platform)
-- [Prisma](https://www.prisma.io) 7 ORM
+- [Prisma](https://www.prisma.io) 7 ORM, using the new `prisma-client` generator with the `@prisma/adapter-pg` driver adapter
 - PostgreSQL 16 (via Docker Compose)
 
 ## Project status
 
-This is an early-stage scaffold: the default Nest starter module plus a Prisma setup pointed at a local Postgres container. The `prisma/schema.prisma` datasource is configured but has no models or migrations yet.
+Schema has `Category`, `MenuItem`, and `Staff` models with an initial migration applied, plus a seed script for demo menu data. There's no API beyond the default Nest starter yet — the menu endpoints and staff auth are still to come.
 
 ## Prerequisites
 
@@ -29,23 +29,23 @@ Run these steps in order for a fresh checkout:
    npm install
    ```
 
-2. **Start the database**
+   This also runs `prisma generate` automatically (via `postinstall`), which writes the generated Prisma Client to `generated/prisma`. That folder is gitignored, so re-run `npx prisma generate` manually any time you pull schema changes without reinstalling.
+
+2. **Configure environment variables**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   The defaults match `docker-compose.yml`. Edit `.env` if you want different credentials.
+
+3. **Start the database**
 
    ```bash
    docker compose up -d
    ```
 
-   This starts a Postgres 16 container (`db` service) on port `5432` with database `hons_cafe`, user `cafe`, password `cafe_dev_password`.
-
-3. **Configure environment variables**
-
-   Create a `.env` file in the project root with:
-
-   ```bash
-   DATABASE_URL="postgresql://cafe:cafe_dev_password@localhost:5432/hons_cafe"
-   ```
-
-   This must match the credentials in `docker-compose.yml`.
+   This starts a Postgres 16 container (`db` service) on port `5432` with the database/user/password from `.env`.
 
 4. **Apply the database schema**
 
@@ -53,9 +53,17 @@ Run these steps in order for a fresh checkout:
    npx prisma migrate dev
    ```
 
-   (Once there are models in `prisma/schema.prisma`, this creates/applies migrations and generates the Prisma Client into `generated/prisma`.)
+   Applies any pending migrations in `prisma/migrations`.
 
-5. **Run the app**
+5. **Seed demo data (optional)**
+
+   ```bash
+   npx prisma db seed
+   ```
+
+   Upserts the categories and menu items defined in `prisma/seed-data.ts`, so it's safe to run more than once.
+
+6. **Run the app**
 
    ```bash
    # development (watch mode)
@@ -78,6 +86,9 @@ npx prisma studio
 
 # regenerate the Prisma Client after editing schema.prisma
 npx prisma generate
+
+# create a new migration after editing schema.prisma
+npx prisma migrate dev --name <description>
 
 # lint
 npm run lint
